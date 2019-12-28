@@ -2,6 +2,7 @@ import React from 'react';
 import logo from './logo.svg';
 import './App.css';
 
+const wasm = import('./build')
 function App() {
   return (
     <div className="App">
@@ -19,6 +20,7 @@ function App() {
           Learn React
         </a>
       </header>
+      <button onClick={async e => (await wasm).greet}>Greet!</button>
     </div>
   );
 }
