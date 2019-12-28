@@ -20,7 +20,7 @@ function App() {
           Learn React
         </a>
       </header>
-      <button onClick={async e => (await wasm).greet}>Greet!</button>
+      <button onClick={async (e) => (await wasm).greet()}>Greet!</button>
     </div>
   );
 }
