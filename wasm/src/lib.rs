@@ -1,3 +1,4 @@
+use image::GenericImageView;
 use wasm_bindgen::prelude::*;
 
 #[wasm_bindgen]
@@ -25,4 +26,11 @@ pub fn fib(num: u8) -> u8 {
 pub fn run_fib(num: u8) {
   let fib_res = fib(num);
   log(&format!("{}", fib_res))
+}
+
+#[wasm_bindgen]
+pub fn image_stuff() {
+  let uimg = image::open("./gitstats2.png").unwrap();
+
+  log(&format!("{:?}", uimg.dimensions()))
 }
