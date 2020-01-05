@@ -29,8 +29,24 @@ pub fn run_fib(num: u8) {
 }
 
 #[wasm_bindgen]
-pub fn image_stuff() {
-  let uimg = image::open("./gitstats2.png").unwrap();
+pub fn image_stuff(im: &[u8]) {
+  let uimg = image::load_from_memory(im).unwrap();
 
-  log(&format!("{:?}", uimg.dimensions()))
+  log(&format!("{:?}", uimg.dimensions()));
+}
+
+#[wasm_bindgen]
+pub fn monochrome(image_buff: &[u8]) -> Box<[u8]> {
+  log(&format!(
+    "IMAGE BUFF PASSED TO WASM BEFORE PROCESSING IS: {:?}",
+    image_buff
+  ));
+  // TODO: remove rayon jpeg feature to support wasm jpeg decode
+  let img = image::load_from_memory(image_buff).unwrap().grayscale();
+  let mut wr = Vec::new();
+  img
+    .write_to(&mut wr, image::ImageOutputFormat::PNG)
+    .unwrap();
+
+  wr.into_boxed_slice()
 }

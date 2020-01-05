@@ -2,7 +2,7 @@ import React, { Component } from "react";
 import { Card, CardHeader, CardBody, CardFooter, Row, Col, Container, Media, FormGroup, Label, Input, Button } from "reactstrap";
 import Dropzone from 'react-dropzone-uploader'
 import 'react-dropzone-uploader/dist/styles.css'
-
+const wasmModule = import('../build')
 
 // this function coverts our array buffer of manipulated image to base64 to be used in the image component
 // thank you very much, stackoverflow.. saved me hours 🤗
@@ -56,9 +56,18 @@ class UploadImageComponent extends Component {
         fileReader.readAsArrayBuffer(fileBlob)
         fileReader.onload = event => {
             let memBuf = new Uint8Array(event.target.result)
+            console.log(`IMAGE MEM BUFF BEFORE PASSING TO WASM IS`, memBuf)
+            wasmModule.then(r => {
+                let rs = r.monochrome(memBuf)
+                console.log(`MONOCHROME EFFECT RETURNED...`, rs)
+
+                let img64 = UInt8ArrayToBase64(rs)
+                this.setState({ manipulatedImage: img64 })
+            }).catch(err => console.log(`ERROR RUNNING IMAGE STUFF IN REACT`, err))
             this.setState({ isProcessing: false, disabledEffect: false })
         }
     }
+
     // changes the message text of the Dropzone upload component
     handleUploadTextChange(files, extras) {
         if (extras.reject) {
@@ -113,6 +122,7 @@ class UploadImageComponent extends Component {
 
     render() {
         const { manipulatedImage, isProcessing } = this.state
+        // TODO: add jpeg to list of accepted codecs when fixed in wasm
         return (
             <div className="images-container">
                 <Container>
@@ -127,7 +137,7 @@ class UploadImageComponent extends Component {
                                 <Dropzone
                                     onChangeStatus={this.handleChangeStatus}
                                     onSubmit={this.handleImageSubmit}
-                                    accept='image/*'
+                                    accept='image/png'
                                     styles={{ previewImage: { maxHeight: '70px', maxWidth: '70px' }, dropzone: { height: 200 }, inputLabel: (files, extra) => extra.reject ? {} : {}, inputLabelWithFiles: (files, extra) => { } }}
                                     inputContent={this.handleUploadTextChange}
                                     maxFiles={1}
