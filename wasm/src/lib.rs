@@ -1,6 +1,5 @@
 use image::GenericImageView;
 use wasm_bindgen::prelude::*;
-
 #[macro_use]
 pub mod log;
 
@@ -48,8 +47,10 @@ pub fn handle_effect(image_buffer: &[u8], effect: &str) -> Option<Box<[u8]>> {
       None
     }
     "sepia" => {
-      console_log!("Oops! This isnt supported yet");
-      None
+      let eff = sepia(image_buffer);
+      console_log!("IMAGE SEPIA IS: {:?}", eff);
+      console_log!("This is a work in progress!!");
+      Some(eff)
     }
     _ => {
       console_log!("Oops! Unknowm format");
@@ -72,4 +73,48 @@ pub fn monochrome(image_buff: &[u8]) -> Box<[u8]> {
     .unwrap();
 
   wr.into_boxed_slice()
+}
+
+#[wasm_bindgen]
+pub fn sepia(image_buff: &[u8]) -> Box<[u8]> {
+  let img = image::load_from_memory(image_buff).unwrap().to_rgba();
+  let (width, height) = img.dimensions();
+
+  let mut output_img = img.clone();
+  for x in 0..width {
+    for y in 0..height {
+      let pixel = img.get_pixel(x, y);
+      let mut pixel_cp = *pixel;
+      let r = (0.393 * pixel[0] as f64) + (0.769 * pixel[1] as f64) + (0.189 * pixel[0] as f64);
+      let g = (0.349 * pixel[0] as f64) + (0.686 * pixel[1] as f64) + (0.168 * pixel[0] as f64);
+      let b = (0.272 * pixel[0] as f64) + (0.53 * pixel[1] as f64) + (0.131 * pixel[0] as f64);
+
+      if r > 255.0 {
+        pixel_cp[0] = 255;
+      } else {
+        pixel_cp[0] = r as u8;
+      }
+
+      if g > 255.0 {
+        pixel_cp[1] = 255
+      } else {
+        pixel_cp[1] = g as u8;
+      }
+
+      if b > 255.0 {
+        pixel_cp[2] = 255
+      } else {
+        pixel_cp[2] = b as u8;
+      }
+
+      pixel_cp[3] = pixel[3];
+      output_img.put_pixel(x, y, pixel_cp);
+    }
+  }
+
+  let mut out_writer: Vec<u8> = Vec::new();
+  let md = image::DynamicImage::ImageRgba8(output_img);
+  md.write_to(&mut out_writer, image::ImageOutputFormat::PNG)
+    .unwrap();
+  out_writer.into_boxed_slice()
 }
