@@ -44,6 +44,8 @@ pub fn handle_effect(image_buffer: &[u8], effect: &str) -> Option<Box<[u8]>> {
   match effect {
     "monochrome" => Some(monochrome(image_buffer)),
     "half-monochrome" => {
+      // here, use a dialogbox that mentions that we dont support that yet
+      alert("Oops! We dont support that yet. Please try again sooon 😉");
       console_log!("Oops! This isnt supported yet");
       None
     }
