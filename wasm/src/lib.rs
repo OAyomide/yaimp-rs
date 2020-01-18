@@ -1,5 +1,7 @@
 use image::GenericImageView;
+// use std::time::{Duration, SystemTime, UNIX_EPOCH};
 use wasm_bindgen::prelude::*;
+
 #[macro_use]
 pub mod log;
 
@@ -43,12 +45,10 @@ pub fn handle_effect(image_buffer: &[u8], effect: &str) -> Option<Box<[u8]>> {
     "monochrome" => Some(monochrome(image_buffer)),
     "half-monochrome" => {
       console_log!("Oops! This isnt supported yet");
-      // log(&format!("Oops! This isnt supported yet"));
       None
     }
     "sepia" => {
       let eff = sepia(image_buffer);
-      console_log!("IMAGE SEPIA IS: {:?}", eff);
       console_log!("This is a work in progress!!");
       Some(eff)
     }
@@ -61,10 +61,6 @@ pub fn handle_effect(image_buffer: &[u8], effect: &str) -> Option<Box<[u8]>> {
 
 #[wasm_bindgen]
 pub fn monochrome(image_buff: &[u8]) -> Box<[u8]> {
-  console_log!(
-    "IMAGE BUFF PASSED TO WASM BEFORE PROCESSING IS: {:?}",
-    image_buff
-  );
   // TODO: remove rayon jpeg feature to support wasm jpeg decode
   let img = image::load_from_memory(image_buff).unwrap().grayscale();
   let mut wr = Vec::new();
@@ -83,6 +79,9 @@ pub fn sepia(image_buff: &[u8]) -> Box<[u8]> {
   let mut output_img = img.clone();
   for x in 0..width {
     for y in 0..height {
+      // this is a rather naive implementation. but works now
+      // 💡 an idea would be to use ```map_with_alpha so the effect is applied to all channels on image
+      // without necessarily doing most of below. BUT THIS WORKS NOW!!!🎊🎉
       let pixel = img.get_pixel(x, y);
       let mut pixel_cp = *pixel;
       let r = (0.393 * pixel[0] as f64) + (0.769 * pixel[1] as f64) + (0.189 * pixel[0] as f64);
@@ -118,3 +117,73 @@ pub fn sepia(image_buff: &[u8]) -> Box<[u8]> {
     .unwrap();
   out_writer.into_boxed_slice()
 }
+
+// #[wasm_bindgen(start)]
+// pub fn run_perf() {
+//   let window = web_sys::window().expect("should have a window in this context");
+//   let performance = window
+//     .performance()
+//     .expect("performance should be available");
+
+//   console_log!("the current time (in ms) is {}", performance.now());
+
+//   // let start = perf_to_system(performance.timing().request_start());
+//   // let end = perf_to_system(performance.timing().response_end());
+
+//   // console_log!("request started at {}", humantime::format_rfc3339(start));
+//   // console_log!("request ended at {}", humantime::format_rfc3339(end));
+// }
+
+// fn perf_to_system(amt: f64) -> SystemTime {
+//   let secs = (amt as u64) / 1_000;
+//   let nanos = ((amt as u32) % 1_000) * 1_000_000;
+//   UNIX_EPOCH + Duration::new(secs, nanos)
+// }
+// #[wasm_bindgen]
+// pub fn get_time_taken(start: f64, end: f64) -> (f64, f64) {
+//   let window = web_sys::window().expect("ERROR. WINDOW CONTEXT NOT FOUND");
+//   let performance = window
+//     .performance()
+//     .expect("ERROR. PERFORMANCE NOT IN SCOPE");
+
+//   let start = perf_to_sys(performance.timing().request_start());
+//   let end = perf_to_sys(performance.timing().response_end());
+//   console_log!("STARTED AT: {:?}", humantime::format_rfc3339(start));
+//   console_log!("ENDED AT {:?}", humantime::format_rfc3339(end));
+// }
+
+// #[wasm_bindgen]
+// pub fn program_start() -> Option<f64> {
+//   let window = web_sys::window().expect("Cannot Find window in context");
+//   let performance = window
+//     .performance()
+//     .expect("ERROR. PERFORMANCE NOT FOUND IN CONTEXT");
+//   let start = perf_to_sys(performance.timing().request_start());
+//   let to_mili = start
+//     .duration_since(UNIX_EPOCH)
+//     .expect("Time is in the past.")
+//     .as_secs_f64();
+
+//   return Some(to_mili);
+// }
+
+// #[wasm_bindgen]
+// pub fn program_end() -> Option<f64> {
+//   let window = web_sys::window().expect("Cannot Find window in context");
+//   let performance = window
+//     .performance()
+//     .expect("Error. Could not find performance in context");
+//   let end = perf_to_sys(performance.timing().response_end());
+//   let to_mili = end
+//     .duration_since(UNIX_EPOCH)
+//     .expect("TIME IS IN THE PAST")
+//     .as_secs_f64();
+
+//   return Some(to_mili);
+// }
+
+// fn perf_to_sys(tm: f64) -> SystemTime {
+//   let sec = (tm as u64) / 1_000;
+//   let nano = ((tm as u32) % 1_000) * 1_000_000;
+//   UNIX_EPOCH + Duration::new(sec, nano)
+// }

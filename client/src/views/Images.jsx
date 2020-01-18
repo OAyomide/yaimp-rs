@@ -56,10 +56,12 @@ class UploadImageComponent extends Component {
     fileReader.readAsArrayBuffer(fileBlob)
     fileReader.onload = event => {
       let memBuf = new Uint8Array(event.target.result)
-      console.log(`IMAGE MEM BUFF BEFORE PASSING TO WASM IS`, memBuf)
       wasmModule.then(r => {
+        // let start = r.program_start()
         let rs = r.handle_effect(memBuf, this.state.effect)
-        console.log(`MONOCHROME EFFECT RETURNED...`, rs)
+        // let end = r.program_end()
+        // console.log(`STARTED AT::`, start)
+        // console.log(`ENDED AT::`, end)
         if (rs) {
           let img64 = UInt8ArrayToBase64(rs)
           this.setState({ manipulatedImage: img64 })
