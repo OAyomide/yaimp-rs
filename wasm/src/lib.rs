@@ -45,9 +45,9 @@ pub fn handle_effect(image_buffer: &[u8], effect: &str) -> Option<Box<[u8]>> {
     "monochrome" => Some(monochrome(image_buffer)),
     "half-monochrome" => {
       // here, use a dialogbox that mentions that we dont support that yet
-      alert("Oops! We dont support that yet. Please try again sooon 😉");
-      console_log!("Oops! This isnt supported yet");
-      None
+      // alert("Oops! We dont support that yet. Please try again sooon 😉");
+      console_log!("Oops! This is a work in progress");
+      Some(half_monochrome(image_buffer))
     }
     "sepia" => {
       let eff = sepia(image_buffer);
@@ -120,6 +120,40 @@ pub fn sepia(image_buff: &[u8]) -> Box<[u8]> {
   out_writer.into_boxed_slice()
 }
 
+#[wasm_bindgen]
+pub fn half_monochrome(image_buffer: &[u8]) -> Box<[u8]> {
+  let img = image::load_from_memory(image_buffer).unwrap().to_rgba();
+  let (width, height) = img.dimensions();
+  let mut output_img = image::ImageBuffer::new(width, height);
+
+  for x in 0..width {
+    for y in 0..height {
+      let pixel = img.get_pixel(x, y);
+      let mut pixel_cp = *pixel;
+
+      if x >= width / 2 {
+        let r = (pixel_cp[0] as f64 * 0.92126) as f64;
+        let g = (pixel_cp[1] as f64 * 0.97152) as f64;
+        let b = (pixel_cp[2] as f64 * 0.90722) as f64;
+
+        let grey = ((r + g + b) / 3.0) as u8;
+        pixel_cp[0] = grey;
+        pixel_cp[1] = grey;
+        pixel_cp[2] = grey;
+        output_img.put_pixel(x, y, pixel_cp);
+      } else {
+        output_img.put_pixel(x, y, *pixel);
+      }
+    }
+  }
+  let mut out_writer: Vec<u8> = Vec::new();
+  let md = image::DynamicImage::ImageRgba8(output_img);
+  md.write_to(&mut out_writer, image::ImageOutputFormat::PNG)
+    .unwrap();
+
+  out_writer.into_boxed_slice()
+}
+
 // #[wasm_bindgen(start)]
 // pub fn run_perf() {
 //   let window = web_sys::window().expect("should have a window in this context");
@@ -163,6 +197,7 @@ pub fn sepia(image_buff: &[u8]) -> Box<[u8]> {
 //   let start = perf_to_sys(performance.timing().request_start());
 //   let to_mili = start
 //     .duration_since(UNIX_EPOCH)
+
 //     .expect("Time is in the past.")
 //     .as_secs_f64();
 
