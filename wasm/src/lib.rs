@@ -54,6 +54,9 @@ pub fn handle_effect(image_buffer: &[u8], effect: &str) -> Option<Box<[u8]>> {
       console_log!("This is a work in progress!!");
       Some(eff)
     }
+    "crop" => {
+      console_log!("This is a WIP. If there is anything wrong, pls open an issue on the repi")
+    }
     _ => {
       console_log!("Oops! Unknowm format");
       None
@@ -154,6 +157,18 @@ pub fn half_monochrome(image_buffer: &[u8]) -> Box<[u8]> {
   out_writer.into_boxed_slice()
 }
 
+#[wasm_bindgen]
+pub fn crop_image(image_buffer: &[u8]) -> Box<[u8]> {
+  let mut img = image::load_from_memory(image_buffer).unwrap();
+  let (width, height) = img.dimensions();
+  // then crop image
+  let crop = img.crop(100, 110, width, height);
+  let mut out_writer: Vec<u8> = Vec::new();
+  crop
+    .write_to(&mut out_writer, image::ImageOutputFormat::PNG)
+    .unwrap();
+  out_writer.into_boxed_slice()
+}
 // #[wasm_bindgen(start)]
 // pub fn run_perf() {
 //   let window = web_sys::window().expect("should have a window in this context");
