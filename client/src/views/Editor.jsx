@@ -27,7 +27,7 @@ export default class Editor extends Component {
     img.src = this.props.location.state.meta.previewUrl
     console.log(img.src)
     img.onload = () => {
-      context.drawImage(img, 50, 50, 1920 / 1.5, 1053 / 1.5)
+      context.drawImage(img, 0, 0, img.naturalWidth / 1.5, img.naturalHeight / 1.5)
     }
 
     canvas.height = img.height
@@ -58,21 +58,21 @@ export default class Editor extends Component {
     return (
       <div>
         <Header />
-        <canvas id="my-canvas" ref={this.canvasRef} style={{ marginLeft: '160px' }}></canvas>
-        {/* <canvas id="shadow-canvas" ref={this.canvasRef2} /> */}
-        {/* <Container> */}
-        <div>
-          <Row>
-            <FormGroup>
-              <Label for="select"> Effect </Label>
-              <Input>
-                <option value="">Select</option>
-                <option value="monochrome">Monochrome</option>
-                <option value="half-monochrome">Half Monochrome</option>
-                <option value="sepia">Sepia</option>
-              </Input>
-            </FormGroup>
-          </Row>
+        <div style={{ display: 'flex', width: '100%', justifyContent: 'space-between', marginTop: '50px' }}>
+          <div style={{ marginLeft: '20px', width: '120px' }}>
+            <Row>
+              <FormGroup>
+                <Label for="select"> Effect </Label>
+                <Input type="select" name="select" id="effectselect" required style={{ width: '150px' }}>
+                  <option value="">Select</option>
+                  <option value="monochrome">Monochrome</option>
+                  <option value="half-monochrome">Half Monochrome</option>
+                  <option value="sepia">Sepia</option>
+                </Input>
+              </FormGroup>
+            </Row>
+          </div>
+          <canvas id="my-canvas" ref={this.canvasRef} style={{ marginLeft: '170px' }}></canvas>
         </div>
         {/* </Container> */}
         <Footer />
@@ -80,3 +80,6 @@ export default class Editor extends Component {
     )
   }
 }
+
+// style={{ marginLeft: '160px' }}
+// width: 1920, height: 1080, 
