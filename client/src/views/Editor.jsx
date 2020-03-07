@@ -25,7 +25,9 @@ export default class Editor extends Component {
 
     const img = new Image()
     img.src = this.props.location.state.meta.previewUrl
-    console.log(img.src)
+    window.document.title = this.props.location.state.meta.name
+    // console.log(this.props.state.meta)
+    // console.log(img.src)
     img.onload = () => {
       context.drawImage(img, 0, 0, img.naturalWidth / 1.5, img.naturalHeight / 1.5)
     }
@@ -61,13 +63,20 @@ export default class Editor extends Component {
         <div style={{ display: 'flex', width: '100%', justifyContent: 'space-between', marginTop: '50px' }}>
           <div style={{ marginLeft: '20px', width: '120px' }}>
             <Row>
-              <FormGroup>
+              <FormGroup style={{ width: '150px', marginLeft: '10px' }}>
                 <Label for="select"> Effect </Label>
-                <Input type="select" name="select" id="effectselect" required style={{ width: '150px' }}>
+                <Input type="select" name="select" id="effectselect" required>
                   <option value="">Select</option>
                   <option value="monochrome">Monochrome</option>
                   <option value="half-monochrome">Half Monochrome</option>
                   <option value="sepia">Sepia</option>
+                </Input>
+              </FormGroup>
+              <FormGroup style={{ width: '150px', marginLeft: '10px' }}>
+                <Label for="compression">Compression</Label>
+                <Input type="select">
+                  <option value="">Select</option>
+                  <option value="oxipng">OxiPNG</option>
                 </Input>
               </FormGroup>
             </Row>
