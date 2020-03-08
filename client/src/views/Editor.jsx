@@ -2,13 +2,19 @@ import React, { Component } from 'react'
 import Header from '../components/Header'
 import Footer from '../components/Footer'
 import { Container, Col, Card, CardBody, Media, Row, FormGroup, Label, Input } from 'reactstrap'
+import Slider, { Range, createSliderWithTooltip } from 'rc-slider'
+import 'rc-slider/assets/index.css'
 
+const SSlider = createSliderWithTooltip(Slider)
 export default class Editor extends Component {
   constructor(props) {
     super(props)
     this.state = {
       imgSrc: '',
-      src: ''
+      src: '',
+      effect: '',
+      optimization: '',
+      compression: ''
     }
 
     this.canvasRef = React.createRef();
@@ -54,6 +60,20 @@ export default class Editor extends Component {
     this.drawCanvas()
   }
 
+  changeImageEffect = e => {
+    let value = e.target.value
+    let { effect } = this.state
+    this.setState({ effect: value })
+  }
+
+  changeOptimizationValue = e => {
+    this.setState({ optimization: e })
+  }
+
+  changeCompression = e => {
+    this.setState({ compression: e.target.value })
+  }
+
   render() {
     const { meta: { previewUrl } } = this.props.location.state
     console.log(this.props.location.state.meta)
@@ -65,7 +85,7 @@ export default class Editor extends Component {
             <Row>
               <FormGroup style={{ width: '150px', marginLeft: '10px' }}>
                 <Label for="select"> Effect </Label>
-                <Input type="select" name="select" id="effectselect" required>
+                <Input type="select" name="select" id="effectselect" required onChange={e => this.changeImageEffect(e)}>
                   <option value="">Select</option>
                   <option value="monochrome">Monochrome</option>
                   <option value="half-monochrome">Half Monochrome</option>
@@ -74,10 +94,11 @@ export default class Editor extends Component {
               </FormGroup>
               <FormGroup style={{ width: '150px', marginLeft: '10px' }}>
                 <Label for="compression">Compression</Label>
-                <Input type="select">
+                <Input type="select" onChange={e => this.changeCompression(e)}>
                   <option value="">Select</option>
                   <option value="oxipng">OxiPNG</option>
                 </Input>
+                {this.state.compression !== '' ? <SSlider defaultValue={2} max={6} style={{ marginTop: '5px' }} onChange={e => this.changeOptimizationValue(e)} /> : ''}
               </FormGroup>
             </Row>
           </div>
