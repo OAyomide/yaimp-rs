@@ -5,6 +5,17 @@ import { Container, Col, Card, CardBody, Media, Row, FormGroup, Label, Input } f
 import Slider, { Range, createSliderWithTooltip } from 'rc-slider'
 import 'rc-slider/assets/index.css'
 
+const WasmModule = import('../build')
+
+function UInt8ArrayToBase64(buffer) {
+  let bin = ''
+  for (let i = 0; i < buffer.length; i++) {
+    bin += String.fromCharCode(buffer[i])
+  }
+  return window.btoa(bin)
+}
+
+
 const SSlider = createSliderWithTooltip(Slider)
 export default class Editor extends Component {
   constructor(props) {
@@ -31,7 +42,7 @@ export default class Editor extends Component {
 
     const img = new Image()
     img.src = this.props.location.state.meta.previewUrl
-    window.document.title = this.props.location.state.meta.name
+    window.document.title = `YAIMP - ${this.props.location.state.meta.name}`
     // console.log(this.props.state.meta)
     // console.log(img.src)
     img.onload = () => {
@@ -60,10 +71,34 @@ export default class Editor extends Component {
     this.drawCanvas()
   }
 
-  changeImageEffect = e => {
+
+  async applyImageEffect(effect) {
+    console.log(`Effect s`, effect)
+    let fileBlobURL = this.props.location.state.meta.previewUrl
+    let fetchBlobURL = await (await fetch(fileBlobURL)).blob()
+    let fileReader = new FileReader()
+    fileReader.readAsArrayBuffer(fetchBlobURL)
+    fileReader.onload = event => {
+      let memBuf = new Uint8Array(event.target.result)
+      WasmModule.then(res => {
+        let imgEffect = res.handle_effect(memBuf, effect)
+        if (imgEffect) {
+          let img64 = UInt8ArrayToBase64(imgEffect)
+          let canv = this.canvasRef.current
+          let context = canv.getContext("2d")
+          let img = new Image()
+          img.src = `data:image/png;base64,${img64}`
+          img.onload = () => {
+            context.drawImage(img, 0, 0, img.naturalWidth / 1.5, img.naturalHeight / 1.5)
+          }
+        }
+      })
+    }
+  }
+
+  changeImageEffect = async (e) => {
     let value = e.target.value
-    let { effect } = this.state
-    this.setState({ effect: value })
+    await this.applyImageEffect(value)
   }
 
   changeOptimizationValue = e => {
@@ -85,7 +120,7 @@ export default class Editor extends Component {
             <Row>
               <FormGroup style={{ width: '150px', marginLeft: '10px' }}>
                 <Label for="select"> Effect </Label>
-                <Input type="select" name="select" id="effectselect" required onChange={e => this.changeImageEffect(e)}>
+                <Input type="select" name="select" id="effselect" required onChange={e => this.changeImageEffect(e)}>
                   <option value="">Select</option>
                   <option value="monochrome">Monochrome</option>
                   <option value="half-monochrome">Half Monochrome</option>
@@ -110,6 +145,3 @@ export default class Editor extends Component {
     )
   }
 }
-
-// style={{ marginLeft: '160px' }}
-// width: 1920, height: 1080, 
