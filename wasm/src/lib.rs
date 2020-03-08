@@ -174,9 +174,11 @@ pub fn crop_image(image_buffer: &[u8]) -> Box<[u8]> {
 #[wasm_bindgen]
 pub fn rotate(image_buffer: &[u8], degree: i16) -> Option<Box<[u8]>> {
   let img: Option<image::DynamicImage> = match degree {
+    // we want to reset when the user selects 0
     90 => Some(image::load_from_memory(image_buffer).unwrap().rotate90()),
     180 => Some(image::load_from_memory(image_buffer).unwrap().rotate180()),
     270 => Some(image::load_from_memory(image_buffer).unwrap().rotate270()),
+    360 => Some(image::load_from_memory(image_buffer).unwrap()),
     _ => {
       console_log!("Cannot rotate to the degree {:?}", degree);
       None

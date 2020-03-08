@@ -89,7 +89,7 @@ export default class Editor extends Component {
           let context = canv.getContext("2d")
           let img = new Image()
           img.src = `data:image/png;base64,${img64}`
-          this.setState({ imgBuff: memBuf })
+          this.setState({ imgBuff: imgEffect, effect: effect })
           img.onload = () => {
             context.drawImage(img, 0, 0, img.naturalWidth / 1.5, img.naturalHeight / 1.5)
           }
@@ -102,6 +102,7 @@ export default class Editor extends Component {
     let degree = parseInt(deg.target.value, 10)
     let canv = this.canvasRef.current
     let context = canv.getContext("2d")
+    context.clearRect(0, 0, context.canvas.width, context.canvas.height)
     let buff = this.state.imgBuff
     // let rotate = await (await WasmModule).rotate(buff, degree)
     WasmModule.then(res => {
@@ -149,11 +150,12 @@ export default class Editor extends Component {
               </FormGroup>
               <FormGroup style={{ width: '150px', marginLeft: '10px' }}>
                 <Label>Rotate</Label>
-                <Input type="select" onChange={e => this.rotateImage(e)}>
+                <Input type="select" onChange={e => this.rotateImage(e)} disabled={this.state.effect === '' ? true : false}>
                   <option value="">Select</option>
                   <option value={90}>90</option>
                   <option value={180}>180</option>
                   <option value={270}>270</option>
+                  <option value={360}>360</option>
                 </Input>
               </FormGroup>
               <FormGroup style={{ width: '150px', marginLeft: '10px' }}>
