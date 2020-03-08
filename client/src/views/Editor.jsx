@@ -25,7 +25,8 @@ export default class Editor extends Component {
       src: '',
       effect: '',
       optimization: '',
-      compression: ''
+      compression: '',
+      imgBuff: new Uint8Array()
     }
 
     this.canvasRef = React.createRef();
@@ -88,12 +89,31 @@ export default class Editor extends Component {
           let context = canv.getContext("2d")
           let img = new Image()
           img.src = `data:image/png;base64,${img64}`
+          this.setState({ imgBuff: memBuf })
           img.onload = () => {
             context.drawImage(img, 0, 0, img.naturalWidth / 1.5, img.naturalHeight / 1.5)
           }
         }
       })
     }
+  }
+
+  async rotateImage(deg) {
+    let degree = parseInt(deg.target.value, 10)
+    let canv = this.canvasRef.current
+    let context = canv.getContext("2d")
+    let buff = this.state.imgBuff
+    // let rotate = await (await WasmModule).rotate(buff, degree)
+    WasmModule.then(res => {
+      let rotate = res.rotate(buff, degree)
+      let rotatedImg = UInt8ArrayToBase64(rotate)
+      let img = new Image()
+      img.src = `data:image/png;base64,${rotatedImg}`
+      img.onload = () => {
+        context.drawImage(img, 0, 0, img.naturalWidth / 1.5, img.naturalHeight / 1.5)
+      }
+    })
+
   }
 
   changeImageEffect = async (e) => {
@@ -125,6 +145,15 @@ export default class Editor extends Component {
                   <option value="monochrome">Monochrome</option>
                   <option value="half-monochrome">Half Monochrome</option>
                   <option value="sepia">Sepia</option>
+                </Input>
+              </FormGroup>
+              <FormGroup style={{ width: '150px', marginLeft: '10px' }}>
+                <Label>Rotate</Label>
+                <Input type="select" onChange={e => this.rotateImage(e)}>
+                  <option value="">Select</option>
+                  <option value={90}>90</option>
+                  <option value={180}>180</option>
+                  <option value={270}>270</option>
                 </Input>
               </FormGroup>
               <FormGroup style={{ width: '150px', marginLeft: '10px' }}>

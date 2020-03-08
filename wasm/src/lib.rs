@@ -55,7 +55,8 @@ pub fn handle_effect(image_buffer: &[u8], effect: &str) -> Option<Box<[u8]>> {
       Some(eff)
     }
     "crop" => {
-      console_log!("This is a WIP. If there is anything wrong, pls open an issue on the repi")
+      console_log!("This is a WIP. If there is anything wrong, pls open an issue on the repi");
+      None
     }
     _ => {
       console_log!("Oops! Unknowm format");
@@ -168,6 +169,25 @@ pub fn crop_image(image_buffer: &[u8]) -> Box<[u8]> {
     .write_to(&mut out_writer, image::ImageOutputFormat::PNG)
     .unwrap();
   out_writer.into_boxed_slice()
+}
+
+#[wasm_bindgen]
+pub fn rotate(image_buffer: &[u8], degree: i16) -> Option<Box<[u8]>> {
+  let img: Option<image::DynamicImage> = match degree {
+    90 => Some(image::load_from_memory(image_buffer).unwrap().rotate90()),
+    180 => Some(image::load_from_memory(image_buffer).unwrap().rotate180()),
+    270 => Some(image::load_from_memory(image_buffer).unwrap().rotate270()),
+    _ => {
+      console_log!("Cannot rotate to the degree {:?}", degree);
+      None
+    }
+  };
+  let mut out_writer = Vec::new();
+  img
+    .unwrap()
+    .write_to(&mut out_writer, image::ImageOutputFormat::PNG)
+    .unwrap();
+  Some(out_writer.into_boxed_slice())
 }
 // #[wasm_bindgen(start)]
 // pub fn run_perf() {
