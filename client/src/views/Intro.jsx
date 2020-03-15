@@ -20,7 +20,7 @@ class Intro extends React.Component {
   navigateToNextScreen({ meta, file }, status) {
     if (status === 'done') {
       // naivgate to the editor.. pass the meta as a prop
-      console.log(meta)
+      // console.log(meta)
       this.props.history.push({
         pathname: '/editor',
         state: { meta: meta }
@@ -38,7 +38,7 @@ class Intro extends React.Component {
             <Col md={12} sm={12} xs={12} xl={12}>
               <Dropzone
                 onChangeStatus={this.navigateToNextScreen}
-                onSubmit={console.log(`SUBMIT`)}
+                // onSubmit={console.log(`SUBMIT`)}
                 accept='image/png'
                 maxFiles={1}
                 styles={{ dropzone: { overflow: 'hidden', border: 0, marginTop: '35vh' }, inputLabel: { fontSize: '40px', color: 'white' } }}

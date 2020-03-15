@@ -1,7 +1,7 @@
 import React, { Component } from 'react'
 import Header from '../components/Header'
 import Footer from '../components/Footer'
-import { Container, Col, Card, CardBody, Media, Row, FormGroup, Label, Input } from 'reactstrap'
+import { Container, Col, Card, CardBody, Media, Row, FormGroup, Label, Input, Button } from 'reactstrap'
 import Slider, { Range, createSliderWithTooltip } from 'rc-slider'
 import 'rc-slider/assets/index.css'
 
@@ -26,7 +26,7 @@ export default class Editor extends Component {
       effect: '',
       optimization: '',
       compression: '',
-      imgBuff: new Uint8Array()
+      imgBuff: new Uint8Array(),
     }
 
     this.canvasRef = React.createRef();
@@ -106,15 +106,15 @@ export default class Editor extends Component {
     fileReader.onload = event => {
       let memBuf = new Uint8Array(event.target.result)
       WasmModule.then(res => {
-        let imgCompress = res.compress_image(memBuf, { backup: true, filter: 3, compression: 5, verbose: 1 })
-        console.log(`Image compress is`, imgCompress)
+        let imgCompress = res.compress_image(memBuf, { backup: false, filter: 5, compression: 9, verbose: 1 })
+        // console.log(`Image compress is`, imgCompress)
         if (imgCompress) {
           let img64 = UInt8ArrayToBase64(imgCompress)
           let canv = this.canvasRef.current
           let context = canv.getContext("2d")
           let img = new Image()
           img.src = `data:image/png;base64,${img64}`
-          this.setState({ imgBuff: imgCompress })
+          this.setState({ imgBuff: imgCompress, imgSrc: img64 })
           img.onload = () => {
             context.drawImage(img, 0, 0, img.naturalWidth / 1.5, img.naturalHeight / 1.5)
           }
@@ -157,6 +157,18 @@ export default class Editor extends Component {
     await this.applyimageCompression(e)
   }
 
+  async handleManipulatedImageDownload(e) {
+    e.preventDefault()
+    const { imgSrc } = this.state
+    let blob = await (await fetch(`data:application/octet-stream;base64,${imgSrc}`)).blob()
+    const url = window.URL.createObjectURL(blob)
+    const link = document.createElement('a')
+    link.href = url
+    link.setAttribute('download', 'yaimpManipulated.png')
+    document.body.appendChild(link)
+    link.click()
+  }
+
   render() {
     const { meta: { previewUrl } } = this.props.location.state
     console.log(this.props.location.state.meta)
@@ -196,6 +208,9 @@ export default class Editor extends Component {
             </Row>
           </div>
           <canvas id="my-canvas" ref={this.canvasRef} style={{ marginLeft: '170px' }}></canvas>
+          <div>
+            <Button type='submit' color='success' disabled={!this.state.imgSrc ? true : false} onClick={async e => await this.handleManipulatedImageDownload(e)}>Download</Button>
+          </div>
         </div>
         {/* </Container> */}
         <Footer />

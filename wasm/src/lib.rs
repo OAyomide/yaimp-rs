@@ -200,12 +200,6 @@ pub fn rotate(image_buffer: &[u8], degree: i16) -> Option<Box<[u8]>> {
   Some(out_writer.into_boxed_slice())
 }
 
-// struct Options {
-//   backup: bool,
-//   filter: HashSet<u8>,
-//   compression: HashSet<u8>,
-// }
-
 #[derive(Serialize, Deserialize, Debug)]
 struct FOption {
   backup: bool,
