@@ -98,6 +98,32 @@ export default class Editor extends Component {
     }
   }
 
+  async applyimageCompression(e) {
+    let fileBlobURL = this.props.location.state.meta.previewUrl
+    let fetchBlobURL = await (await fetch(fileBlobURL)).blob()
+    let fileReader = new FileReader()
+    fileReader.readAsArrayBuffer(fetchBlobURL)
+    fileReader.onload = event => {
+      let memBuf = new Uint8Array(event.target.result)
+      WasmModule.then(res => {
+        let imgCompress = res.compress_image(memBuf, { backup: true, filter: 3, compression: 5, verbose: 1 })
+        console.log(`Image compress is`, imgCompress)
+        if (imgCompress) {
+          let img64 = UInt8ArrayToBase64(imgCompress)
+          let canv = this.canvasRef.current
+          let context = canv.getContext("2d")
+          let img = new Image()
+          img.src = `data:image/png;base64,${img64}`
+          this.setState({ imgBuff: imgCompress })
+          img.onload = () => {
+            context.drawImage(img, 0, 0, img.naturalWidth / 1.5, img.naturalHeight / 1.5)
+          }
+        }
+      })
+    }
+  }
+
+
   async rotateImage(deg) {
     let degree = parseInt(deg.target.value, 10)
     let canv = this.canvasRef.current
@@ -126,8 +152,9 @@ export default class Editor extends Component {
     this.setState({ optimization: e })
   }
 
-  changeCompression = e => {
+  changeCompression = async (e) => {
     this.setState({ compression: e.target.value })
+    await this.applyimageCompression(e)
   }
 
   render() {

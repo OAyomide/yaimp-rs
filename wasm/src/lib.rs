@@ -1,9 +1,17 @@
+extern crate oxipng;
+extern crate serde_json;
+
 use image::GenericImageView;
 // use std::time::{Duration, SystemTime, UNIX_EPOCH};
+use oxipng::{optimize_from_memory, Options};
+use std::collections::HashSet;
 use wasm_bindgen::prelude::*;
 
 #[macro_use]
 pub mod log;
+
+#[macro_use]
+extern crate serde_derive;
 
 #[wasm_bindgen]
 extern "C" {
@@ -191,6 +199,55 @@ pub fn rotate(image_buffer: &[u8], degree: i16) -> Option<Box<[u8]>> {
     .unwrap();
   Some(out_writer.into_boxed_slice())
 }
+
+// struct Options {
+//   backup: bool,
+//   filter: HashSet<u8>,
+//   compression: HashSet<u8>,
+// }
+
+#[derive(Serialize, Deserialize, Debug)]
+struct FOption {
+  backup: bool,
+  filter: u8,
+  compression: u8,
+  verbose: u8,
+}
+
+#[wasm_bindgen]
+pub fn compress_image(image_buffer: &[u8], compression_options: &JsValue) -> Option<Box<[u8]>> {
+  let img = image::load_from_memory(image_buffer).unwrap();
+  let mut output_img = Vec::new();
+
+  img
+    .write_to(&mut output_img, image::ImageFormat::PNG)
+    .unwrap();
+
+  let (width, height) = img.dimensions();
+  console_log!("Width and heigth of the image is {} and {}", width, height);
+  // let mut img_out = image::ImageBuffer::new(width, height);
+  let opts: FOption = compression_options.into_serde().unwrap();
+  console_log!("Passed options is: {:?}", opts);
+  let mut filter_hashset = HashSet::new();
+  filter_hashset.insert(opts.filter);
+
+  let mut compression_hashset = HashSet::new();
+  compression_hashset.insert(opts.compression);
+
+  let options = Options {
+    backup: false,
+    filter: filter_hashset,
+    compression: compression_hashset,
+    verbosity: Some(opts.verbose),
+    ..Default::default()
+  };
+
+  let optimize_img = optimize_from_memory(image_buffer, &options)
+    .unwrap()
+    .into_boxed_slice();
+  Some(optimize_img)
+}
+
 // #[wasm_bindgen(start)]
 // pub fn run_perf() {
 //   let window = web_sys::window().expect("should have a window in this context");

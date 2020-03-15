@@ -7,13 +7,24 @@ edition = "2018"
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 
 [dependencies]
-wasm-bindgen = "0.2.58"
 image = { version = "0.22.3"}
 humantime = "1"
+serde = "1.0.104"
+serde_json = "1.0.48"
+serde_derive = "1.0.104"
+# oxipng = "2.3.0"
 
 [dependencies.web-sys]
-version = "0.3.4"
+version = "0.3.36"
 features = ['Window', 'Performance', 'PerformanceTiming', 'console']
+
+[dependencies.wasm-bindgen]
+version="0.2.59"
+features=['serde-serialize']
+
+[dependencies.oxipng]
+version="2.3.0"
+default-features=false
 
 [lib]
 crate-type = ["cdylib", "rlib"]
